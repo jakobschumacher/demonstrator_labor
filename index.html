@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Labor-Demonstrator</title>
+    <style>
+      :root {
+        font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
+          "Helvetica Neue", sans-serif;
+        color: #0f172a;
+        background: #f6f7fb;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        margin: 0;
+        font-weight: 600;
+      }
+
+      label {
+        font-size: 0.85rem;
+        color: #475569;
+        margin-bottom: 0.15rem;
+        display: block;
+      }
+
+      input,
+      select,
+      textarea,
+      button {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .app-shell {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 2.5rem 1.5rem 4rem;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .header-title {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .header-title h1 {
+        font-size: 1.5rem;
+      }
+
+      .pathogen-picker {
+        min-width: 260px;
+      }
+
+      .pathogen-picker select {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #cbd5f5;
+        background: #fff;
+        color: #0f172a;
+        font-weight: 500;
+      }
+
+      .table-card {
+        background: #fff;
+        border-radius: 1rem;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+        padding: 1.5rem;
+      }
+
+      .table-card h2 {
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+      }
+
+      .table-card .actions-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
+      .table-card .actions-bar button {
+        border: none;
+        border-radius: 999px;
+        padding: 0.55rem 1.1rem;
+        font-weight: 600;
+      }
+
+      .primary-btn {
+        background: #2563eb;
+        color: #fff;
+      }
+
+      .ghost-btn {
+        background: #e2e8f0;
+        color: #0f172a;
+      }
+
+      .table-card table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.92rem;
+      }
+
+      .table-card thead {
+        background: #f8fafc;
+      }
+
+      .table-card th,
+      .table-card td {
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0.65rem;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .table-card th {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .table-card tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .table-card input,
+      .table-card select,
+      .table-card textarea {
+        width: 100%;
+        padding: 0.35rem 0.45rem;
+        border-radius: 0.45rem;
+        border: 1px solid #cbd5f5;
+        background: #fff;
+        color: #0f172a;
+      }
+
+      .table-card textarea {
+        min-height: 2.3rem;
+        resize: vertical;
+      }
+
+      .link-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        border: none;
+        background: transparent;
+        color: #2563eb;
+        padding: 0;
+      }
+
+      .muted-text {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-top: 0.25rem;
+      }
+
+      .row-actions {
+        display: flex;
+        gap: 0.35rem;
+      }
+
+      .row-actions button {
+        border: 1px solid #cbd5f5;
+        border-radius: 0.4rem;
+        background: #fff;
+        padding: 0.2rem 0.45rem;
+        font-size: 0.75rem;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        display: none;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 2rem 1rem;
+        z-index: 50;
+        overflow-y: auto;
+      }
+
+      .modal.open {
+        display: flex;
+      }
+
+      .modal-content {
+        background: #fff;
+        border-radius: 1rem;
+        width: min(700px, 100%);
+        padding: 1.5rem;
+        box-shadow: 0 25px 80px rgba(15, 23, 42, 0.2);
+        animation: fadeIn 0.2s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
+        gap: 1rem;
+      }
+
+      .close-btn {
+        border: none;
+        background: transparent;
+        font-size: 1.6rem;
+        line-height: 1;
+        color: #94a3b8;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+      }
+
+      .modal-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+      }
+
+      .modal-actions button {
+        border-radius: 0.5rem;
+        border: none;
+        padding: 0.6rem 1.1rem;
+        font-weight: 600;
+      }
+
+      .modal-actions .secondary {
+        background: #e2e8f0;
+        color: #0f172a;
+      }
+
+      .modal-actions .primary {
+        background: #2563eb;
+        color: #fff;
+      }
+
+      .info-panel {
+        margin-top: 1rem;
+        padding: 0.9rem;
+        border-radius: 0.75rem;
+        background: #f1f5f9;
+        color: #475569;
+        font-size: 0.85rem;
+      }
+
+      .res-id-preview {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .res-group {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 0.9rem 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .res-group h4 {
+        margin-bottom: 0.6rem;
+        color: #0f172a;
+        font-size: 0.95rem;
+      }
+
+      .res-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .res-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .res-item label {
+        flex: 1;
+        margin: 0;
+      }
+
+      .res-item select {
+        flex: 1;
+        min-width: 160px;
+      }
+
+      .res-extra {
+        border: 1px dashed #cbd5f5;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        background: #f8fafc;
+        margin-bottom: 0.75rem;
+      }
+
+      .badge-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.6rem;
+      }
+
+      .badge {
+        background: #e0f2fe;
+        color: #0c4a6e;
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+
+      .badge button {
+        border: none;
+        background: transparent;
+        font-size: 0.9rem;
+        color: #0f172a;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .secondary-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .secondary-actions button {
+        border: none;
+        background: #f1f5f9;
+        color: #0f172a;
+        border-radius: 999px;
+        padding: 0.45rem 0.9rem;
+        font-size: 0.85rem;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        background: #0f172a;
+        color: #fff;
+        padding: 0.85rem 1.2rem;
+        border-radius: 999px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+        z-index: 60;
+      }
+
+      .toast.show {
+        opacity: 0.95;
+      }
+
+      @media (max-width: 900px) {
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .table-card table {
+          display: block;
+          overflow-x: auto;
+        }
+
+        .table-card table table {
+          width: 1200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header>
+        <div class="header-title">
+          <h1>Einheitliche Laborerfassung</h1>
+          <p class="muted-text">
+            Demonstrator für Labortests mit sequenzierten Nachweisen und Resistenzprofilen.
+          </p>
+        </div>
+        <div class="pathogen-picker">
+          <label for="pathogenSelect">Erreger</label>
+          <select id="pathogenSelect">
+            <option value="tuberkulose">Tuberkulose</option>
+            <option value="campylobacter">Campylobacter</option>
+            <option value="enterobacterales" selected>Enterobacterales</option>
+          </select>
+        </div>
+      </header>
+
+      <section class="table-card">
+        <div class="table-header">
+          <h2>Labortests</h2>
+          <p class="muted-text">
+            Jede Tabellenzeile repräsentiert einen Test. Alle Felder sind optional, leere Zeilen bleiben möglich.
+          </p>
+        </div>
+        <div class="actions-bar">
+          <button id="addRowBtn" class="primary-btn">+ Labortest hinzufügen</button>
+          <div class="secondary-actions">
+            <button id="saveStorageBtn" type="button">In LocalStorage speichern</button>
+            <button id="loadStorageBtn" type="button">Gespeicherte Daten laden</button>
+            <button id="exportJsonBtn" type="button">Export JSON</button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Datum</th>
+                <th>Labor</th>
+                <th>Methode</th>
+                <th>Material</th>
+                <th>Ergebnis</th>
+                <th>Sequenzierungsergebnis</th>
+                <th>Resistenz</th>
+                <th>Detail</th>
+                <th>Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="rowsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="modal" id="sequenceModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h3>Sequenzierungsergebnis</h3>
+            <p class="muted-text">Sequenz-ID und Hinweistexte werden direkt in die Tabellenzeile übernommen.</p>
+          </div>
+          <button class="close-btn" data-close-sequence>&times;</button>
+        </div>
+        <div class="form-grid">
+          <div>
+            <label for="sequenceIdInput">Sequenz-ID</label>
+            <input type="text" id="sequenceIdInput" placeholder="z. B. SEQ-4711-AB" />
+          </div>
+          <div>
+            <label for="sequenceHintInput">Hinweis / Kommentar</label>
+            <textarea id="sequenceHintInput" placeholder="Anmerkungen zur Sequenz"></textarea>
+          </div>
+        </div>
+        <div class="modal-actions" style="justify-content: flex-start">
+          <button type="button" class="ghost-btn" id="seqInfoBtn">Infos anzeigen</button>
+          <button type="button" class="ghost-btn" id="seqDownloadBtn">Download</button>
+        </div>
+        <div class="info-panel" id="seqInfoPanel">Mock-Infos werden nach Bedarf angezeigt.</div>
+        <div class="modal-actions">
+          <button type="button" class="secondary" data-close-sequence>Abbrechen</button>
+          <button type="button" class="primary" id="seqApplyBtn">Übernehmen</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="resistanceModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h3>Resistenzprofil</h3>
+            <p class="muted-text">Demo-ID aktualisiert sich live auf Basis der Auswahl.</p>
+          </div>
+          <button class="close-btn" data-close-resistance>&times;</button>
+        </div>
+        <div class="res-id-preview">
+          <strong>Resistenz-ID</strong>
+          <span id="resIdPreview">n/a</span>
+        </div>
+        <div id="resGroupsContainer"></div>
+        <div id="resExtrasContainer"></div>
+        <div class="modal-actions">
+          <button type="button" class="ghost-btn" id="resResetBtn">Zurücksetzen</button>
+          <button type="button" class="secondary" data-close-resistance>Abbrechen</button>
+          <button type="button" class="primary" id="resApplyBtn">Übernehmen</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast">Gespeichert</div>
+
+    <script>
+      (function () {
+        const RESULT_OPTIONS = [
+          { value: "", label: "-" },
+          { value: "nicht erhoben", label: "nicht erhoben" },
+          { value: "nicht ermittelbar", label: "nicht ermittelbar" },
+          { value: "positiv", label: "positiv" },
+          { value: "negativ", label: "negativ" },
+          { value: "ausstehend", label: "ausstehend" },
+        ];
+
+        const RESIST_STATUS_OPTIONS = [
+          { value: "", label: "-" },
+          { value: "nicht erhoben", label: "nicht erhoben" },
+          { value: "positiv", label: "positiv" },
+          { value: "negativ", label: "negativ" },
+          { value: "nicht ermittelbar", label: "nicht ermittelbar" },
+          { value: "ausstehend", label: "ausstehend" },
+        ];
+
+        const PATHOGEN_CONFIG = {
+          enterobacterales: {
+            label: "Enterobacterales",
+            methods: [
+              "Erregerisolierung (kulturell)",
+              "Nukleinsäure-Nachweis (z. B. PCR)",
+            ],
+            materials: [
+              "Blut",
+              "Abstrich (Screening)",
+              "Abstrich (Wunde)",
+              "Bronchoalveoläre Lavage (BAL)",
+              "Sekret des Respirationstraktes",
+              "Trachealsekret",
+              "Liquor",
+              "Urin",
+              "Stuhl",
+              "Anderes Material",
+            ],
+            resist: {
+              groups: [
+                { name: "Carbapeneme", items: ["Ertapenem", "Imipenem", "Meropenem"] },
+                { name: "Aminoglykoside", items: ["Amikacin", "Gentamicin", "Tobramycin"] },
+                { name: "Cephalosporine", items: ["Ceftazidim", "Cefepim", "Cefotaxim"] },
+                { name: "Fluorchinolone", items: ["Ciprofloxacin", "Levofloxacin"] },
+                { name: "Penicilline", items: ["Piperacillin/Tazobactam"] },
+                {
+                  name: "Sonstige",
+                  items: [
+                    "Colistin/Polymyxin B",
+                    "Co-Trimoxazol",
+                    "Fosfomycin",
+                    "Tigecyclin",
+                  ],
+                },
+                {
+                  name: "Reserveantibiotika",
+                  items: [
+                    "Ceftazidim/Avibactam (Zavicefta®)",
+                    "Ceftolozan/Tazobactam (Zerbaxa®)",
+                    "Cefiderocol (Fetroja®)",
+                    "Eravacyclin (Xerava®)",
+                    "Imipenem/Cilastatin/Relebactam (Recarbrio®)",
+                    "Meropenem/Vaborbactam (Vaborem®)",
+                  ],
+                },
+              ],
+              extras: {
+                meropenemRes: true,
+                carbapenemaseResult: true,
+                geneList: true,
+              },
+            },
+          },
+          campylobacter: {
+            label: "Campylobacter",
+            methods: [
+              "Antigennachweis",
+              "Erregerisolierung (kulturell)",
+              "Nukleinsäure-Nachweis (z. B. PCR)",
+              "Andere Labormethode",
+            ],
+            materials: ["Stuhl", "Abstrich", "Anderes Material"],
+            resist: {
+              groups: [
+                {
+                  name: "(Demo) Resistenz",
+                  items: ["Makrolide", "Fluorchinolone", "Tetrazykline"],
+                },
+              ],
+            },
+          },
+          tuberkulose: {
+            label: "Tuberkulose",
+            methods: [
+              "Mikroskopischer Nachweis",
+              "Nukleinsäure-Nachweis (z. B. PCR)",
+              "Kultureller Nachweis",
+            ],
+            materials: [
+              "Sputum",
+              "Bronchoalveoläre Lavage (BAL)",
+              "Anderes Sekret des Respirationstraktes",
+              "Pleuralflüssigkeit",
+              "Peritonealpunktat",
+              "Magensaft",
+              "Liquor",
+              "Urin",
+              "Gewebeprobe",
+              "Anderes Material",
+            ],
+            resist: {
+              groups: [
+                {
+                  name: "Erstrang-Medikamente",
+                  items: ["Isoniazid (INH)", "Rifampicin (RMP)", "Pyrazinamid (PZA)", "Ethambutol (EMB)"],
+                },
+                {
+                  name: "Zweitrang-Medikamente",
+                  items: [
+                    "Moxifloxacin (MOX)",
+                    "Amikacin (AM)",
+                    "Cycloserin (CS)/Terizidon (TZ)",
+                    "Linezolid (LN)",
+                    "Paraaminosalicylsäure (PAS)",
+                    "Protionamid (PT)",
+                    "Rifabutin (RBT)",
+                    "Levofloxacin (LEV)",
+                    "Bedaquilin (BDQ)",
+                    "Delamanid (DLM)",
+                    "Pretomanid (PA)",
+                    "Clofazimin (CFZ)",
+                  ],
+                },
+              ],
+            },
+          },
+        };
+
+        const RES_PREFIX = {
+          enterobacterales: "ENT",
+          campylobacter: "CAMP",
+          tuberkulose: "TB",
+        };
+
+        const elements = {
+          pathogenSelect: document.getElementById("pathogenSelect"),
+          addRowBtn: document.getElementById("addRowBtn"),
+          rowsBody: document.getElementById("rowsBody"),
+          seqModal: document.getElementById("sequenceModal"),
+          seqIdInput: document.getElementById("sequenceIdInput"),
+          seqHintInput: document.getElementById("sequenceHintInput"),
+          seqInfoPanel: document.getElementById("seqInfoPanel"),
+          seqInfoBtn: document.getElementById("seqInfoBtn"),
+          seqDownloadBtn: document.getElementById("seqDownloadBtn"),
+          seqApplyBtn: document.getElementById("seqApplyBtn"),
+          resModal: document.getElementById("resistanceModal"),
+          resGroupsContainer: document.getElementById("resGroupsContainer"),
+          resExtrasContainer: document.getElementById("resExtrasContainer"),
+          resApplyBtn: document.getElementById("resApplyBtn"),
+          resResetBtn: document.getElementById("resResetBtn"),
+          resIdPreview: document.getElementById("resIdPreview"),
+          saveStorageBtn: document.getElementById("saveStorageBtn"),
+          loadStorageBtn: document.getElementById("loadStorageBtn"),
+          exportJsonBtn: document.getElementById("exportJsonBtn"),
+          toast: document.getElementById("toast"),
+        };
+
+        const sequenceState = { rowIndex: null };
+        const resistanceState = { rowIndex: null, model: null };
+        let currentPathogen = elements.pathogenSelect.value;
+        let rows = [];
+        let toastTimer = null;
+
+        function init() {
+          rows.push(createEmptyRow());
+          elements.pathogenSelect.addEventListener("change", onPathogenChange);
+          elements.addRowBtn.addEventListener("click", () => {
+            rows.push(createEmptyRow());
+            renderTable();
+          });
+          elements.saveStorageBtn.addEventListener("click", saveToStorage);
+          elements.loadStorageBtn.addEventListener("click", loadFromStorage);
+          elements.exportJsonBtn.addEventListener("click", exportJSON);
+          setupSequenceModal();
+          setupResistanceModal();
+          renderTable();
+        }
+
+        function onPathogenChange() {
+          currentPathogen = elements.pathogenSelect.value;
+          const config = PATHOGEN_CONFIG[currentPathogen];
+          rows = rows.map((row) => {
+            const updated = { ...row };
+            if (!config.methods.includes(updated.method)) {
+              updated.method = "";
+            }
+            if (!config.materials.includes(updated.material)) {
+              updated.material = "";
+            }
+            updated.resModel = createDefaultResModel(currentPathogen);
+            updated.resId = "";
+            return updated;
+          });
+          renderTable();
+        }
+
+        function createEmptyRow() {
+          return {
+            date: "",
+            lab: "",
+            method: "",
+            material: "",
+            result: "",
+            seqId: "",
+            seqHint: "",
+            resId: "",
+            resModel: createDefaultResModel(currentPathogen),
+            detail: "",
+          };
+        }
+
+        function createDefaultResModel(pathogenKey) {
+          const config = PATHOGEN_CONFIG[pathogenKey];
+          const base = {
+            pathogenKey,
+            groups: config.resist.groups.map((group) => ({
+              name: group.name,
+              items: group.items.map((item) => ({ label: item, status: "" })),
+            })),
+            extras: {},
+          };
+          if (config.resist.extras?.meropenemRes) {
+            base.extras.meropenemRes = false;
+          }
+          if (config.resist.extras?.carbapenemaseResult) {
+            base.extras.carbapenemaseResult = "";
+          }
+          if (config.resist.extras?.geneList) {
+            base.extras.genes = [];
+          }
+          return base;
+        }
+
+        function cloneResModel(model) {
+          if (!model) {
+            return createDefaultResModel(currentPathogen);
+          }
+          return {
+            pathogenKey: model.pathogenKey,
+            groups: model.groups.map((group) => ({
+              name: group.name,
+              items: group.items.map((item) => ({ label: item.label, status: item.status })),
+            })),
+            extras: JSON.parse(JSON.stringify(model.extras || {})),
+          };
+        }
+
+        function computeResId(pathogenKey, resModel) {
+          if (!resModel) return "";
+          const key = resModel.pathogenKey || pathogenKey;
+          let positive = 0;
+          let negative = 0;
+          resModel.groups.forEach((group) => {
+            group.items.forEach((item) => {
+              if (item.status === "positiv") positive += 1;
+              if (item.status === "negativ") negative += 1;
+            });
+          });
+          const prefix = RES_PREFIX[key] || "RES";
+          const parts = [`${prefix}-P${positive}`, `N${negative}`];
+          if (key === "enterobacterales") {
+            if (resModel.extras?.meropenemRes) {
+              parts.push("MER");
+            }
+            if (resModel.extras?.carbapenemaseResult) {
+              parts.push(resModel.extras.carbapenemaseResult.slice(0, 3).toUpperCase());
+            }
+            if (resModel.extras?.genes?.length) {
+              parts.push(`G${resModel.extras.genes.length}`);
+            }
+          }
+          return parts.filter(Boolean).join("-");
+        }
+
+        function renderTable() {
+          const tbody = elements.rowsBody;
+          tbody.innerHTML = "";
+          rows.forEach((row, index) => {
+            const tr = document.createElement("tr");
+            tr.appendChild(renderDateCell(row, index));
+            tr.appendChild(renderTextCell(row, index));
+            tr.appendChild(renderMethodCell(row, index));
+            tr.appendChild(renderMaterialCell(row, index));
+            tr.appendChild(renderResultCell(row, index));
+            tr.appendChild(renderSequenceCell(row, index));
+            tr.appendChild(renderResistanceCell(row, index));
+            tr.appendChild(renderDetailCell(row, index));
+            tr.appendChild(renderActionCell(index));
+            tbody.appendChild(tr);
+          });
+          if (!rows.length) {
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.colSpan = 9;
+            td.textContent = "Noch keine Labortests erfasst.";
+            td.style.textAlign = "center";
+            td.style.color = "#94a3b8";
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+          }
+        }
+
+        function renderDateCell(row, index) {
+          const td = document.createElement("td");
+          const input = document.createElement("input");
+          input.type = "date";
+          input.value = row.date;
+          input.addEventListener("change", (event) => {
+            rows[index].date = event.target.value;
+          });
+          td.appendChild(input);
+          return td;
+        }
+
+        function renderTextCell(row, index) {
+          const td = document.createElement("td");
+          const input = document.createElement("input");
+          input.type = "text";
+          input.placeholder = "Labor / Suche";
+          input.value = row.lab;
+          input.addEventListener("input", (event) => {
+            rows[index].lab = event.target.value;
+          });
+          td.appendChild(input);
+          return td;
+        }
+
+        function renderMethodCell(row, index) {
+          const td = document.createElement("td");
+          const select = document.createElement("select");
+          buildOptions(select, PATHOGEN_CONFIG[currentPathogen].methods);
+          select.value = PATHOGEN_CONFIG[currentPathogen].methods.includes(row.method)
+            ? row.method
+            : "";
+          select.addEventListener("change", (event) => {
+            rows[index].method = event.target.value;
+          });
+          td.appendChild(select);
+          return td;
+        }
+
+        function renderMaterialCell(row, index) {
+          const td = document.createElement("td");
+          const select = document.createElement("select");
+          buildOptions(select, PATHOGEN_CONFIG[currentPathogen].materials);
+          select.value = PATHOGEN_CONFIG[currentPathogen].materials.includes(row.material)
+            ? row.material
+            : "";
+          select.addEventListener("change", (event) => {
+            rows[index].material = event.target.value;
+          });
+          td.appendChild(select);
+          return td;
+        }
+
+        function renderResultCell(row, index) {
+          const td = document.createElement("td");
+          const select = document.createElement("select");
+          RESULT_OPTIONS.forEach((opt) => {
+            const option = document.createElement("option");
+            option.value = opt.value;
+            option.textContent = opt.label;
+            select.appendChild(option);
+          });
+          select.value = row.result;
+          select.addEventListener("change", (event) => {
+            rows[index].result = event.target.value;
+          });
+          td.appendChild(select);
+          return td;
+        }
+
+        function renderSequenceCell(row, index) {
+          const td = document.createElement("td");
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "link-btn";
+          button.textContent = row.seqId || "Sequenz öffnen";
+          button.addEventListener("click", () => openSequenceModal(index));
+          td.appendChild(button);
+          if (row.seqHint) {
+            const hint = document.createElement("div");
+            hint.className = "muted-text";
+            hint.textContent = row.seqHint;
+            td.appendChild(hint);
+          }
+          return td;
+        }
+
+        function renderResistanceCell(row, index) {
+          const td = document.createElement("td");
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "link-btn";
+          button.textContent = row.resId || "Resistenz öffnen";
+          button.addEventListener("click", () => openResistanceModal(index));
+          td.appendChild(button);
+          return td;
+        }
+
+        function renderDetailCell(row, index) {
+          const td = document.createElement("td");
+          const textarea = document.createElement("textarea");
+          textarea.placeholder = "Freitext";
+          textarea.value = row.detail;
+          textarea.addEventListener("input", (event) => {
+            rows[index].detail = event.target.value;
+          });
+          td.appendChild(textarea);
+          return td;
+        }
+
+        function renderActionCell(index) {
+          const td = document.createElement("td");
+          const wrapper = document.createElement("div");
+          wrapper.className = "row-actions";
+          const duplicateBtn = document.createElement("button");
+          duplicateBtn.type = "button";
+          duplicateBtn.textContent = "Duplizieren";
+          duplicateBtn.addEventListener("click", () => duplicateRow(index));
+          const deleteBtn = document.createElement("button");
+          deleteBtn.type = "button";
+          deleteBtn.textContent = "Löschen";
+          deleteBtn.addEventListener("click", () => deleteRow(index));
+          wrapper.appendChild(duplicateBtn);
+          wrapper.appendChild(deleteBtn);
+          td.appendChild(wrapper);
+          return td;
+        }
+
+        function buildOptions(select, options) {
+          const placeholder = document.createElement("option");
+          placeholder.value = "";
+          placeholder.textContent = "-";
+          select.appendChild(placeholder);
+          options.forEach((entry) => {
+            const option = document.createElement("option");
+            option.value = entry;
+            option.textContent = entry;
+            select.appendChild(option);
+          });
+        }
+
+        function duplicateRow(index) {
+          const clone = JSON.parse(JSON.stringify(rows[index]));
+          clone.resModel = cloneResModel(rows[index].resModel);
+          rows.splice(index + 1, 0, clone);
+          renderTable();
+        }
+
+        function deleteRow(index) {
+          rows.splice(index, 1);
+          renderTable();
+        }
+
+        function setupSequenceModal() {
+          elements.seqModal.querySelectorAll("[data-close-sequence]").forEach((btn) =>
+            btn.addEventListener("click", closeSequenceModal)
+          );
+          elements.seqInfoBtn.addEventListener("click", () => {
+            const value = elements.seqIdInput.value || "unbekannt";
+            elements.seqInfoPanel.textContent = `Sequenz ${value} – Mock-Info: QC i.O., Coverage 98%.`;
+          });
+          elements.seqDownloadBtn.addEventListener("click", () => {
+            const value = elements.seqIdInput.value || "ohne ID";
+            alert(`Mock-Download für Sequenz ${value}`);
+          });
+          elements.seqApplyBtn.addEventListener("click", () => {
+            if (sequenceState.rowIndex === null) return;
+            const row = rows[sequenceState.rowIndex];
+            row.seqId = elements.seqIdInput.value.trim();
+            row.seqHint = elements.seqHintInput.value.trim();
+            renderTable();
+            closeSequenceModal();
+          });
+          elements.seqModal.addEventListener("click", (event) => {
+            if (event.target === elements.seqModal) {
+              closeSequenceModal();
+            }
+          });
+        }
+
+        function openSequenceModal(index) {
+          sequenceState.rowIndex = index;
+          const row = rows[index];
+          elements.seqIdInput.value = row.seqId;
+          elements.seqHintInput.value = row.seqHint;
+          elements.seqInfoPanel.textContent = "Mock-Infos werden nach Bedarf angezeigt.";
+          elements.seqModal.classList.add("open");
+        }
+
+        function closeSequenceModal() {
+          elements.seqModal.classList.remove("open");
+          sequenceState.rowIndex = null;
+        }
+
+        function setupResistanceModal() {
+          elements.resModal.querySelectorAll("[data-close-resistance]").forEach((btn) =>
+            btn.addEventListener("click", closeResistanceModal)
+          );
+          elements.resResetBtn.addEventListener("click", () => {
+            resistanceState.model = createDefaultResModel(currentPathogen);
+            renderResistanceModal();
+          });
+          elements.resApplyBtn.addEventListener("click", () => {
+            if (resistanceState.rowIndex === null || !resistanceState.model) return;
+            const row = rows[resistanceState.rowIndex];
+            row.resModel = cloneResModel(resistanceState.model);
+            row.resId = computeResId(currentPathogen, resistanceState.model);
+            renderTable();
+            closeResistanceModal();
+          });
+          elements.resModal.addEventListener("click", (event) => {
+            if (event.target === elements.resModal) {
+              closeResistanceModal();
+            }
+          });
+        }
+
+        function openResistanceModal(index) {
+          resistanceState.rowIndex = index;
+          const row = rows[index];
+          if (!row.resModel || row.resModel.pathogenKey !== currentPathogen) {
+            row.resModel = createDefaultResModel(currentPathogen);
+          }
+          resistanceState.model = cloneResModel(row.resModel);
+          renderResistanceModal();
+          elements.resModal.classList.add("open");
+        }
+
+        function closeResistanceModal() {
+          resistanceState.rowIndex = null;
+          resistanceState.model = null;
+          elements.resModal.classList.remove("open");
+        }
+
+        function renderResistanceModal() {
+          const model = resistanceState.model;
+          if (!model) return;
+          elements.resGroupsContainer.innerHTML = "";
+          model.groups.forEach((group, gIndex) => {
+            const groupEl = document.createElement("div");
+            groupEl.className = "res-group";
+            const title = document.createElement("h4");
+            title.textContent = group.name;
+            groupEl.appendChild(title);
+            group.items.forEach((item, itemIndex) => {
+              const rowEl = document.createElement("div");
+              rowEl.className = "res-item";
+              const label = document.createElement("label");
+              label.textContent = item.label;
+              const select = document.createElement("select");
+              RESIST_STATUS_OPTIONS.forEach((opt) => {
+                const option = document.createElement("option");
+                option.value = opt.value;
+                option.textContent = opt.label;
+                select.appendChild(option);
+              });
+              select.value = item.status;
+              select.addEventListener("change", (event) => {
+                resistanceState.model.groups[gIndex].items[itemIndex].status = event.target.value;
+                updateResPreview();
+              });
+              rowEl.appendChild(label);
+              rowEl.appendChild(select);
+              groupEl.appendChild(rowEl);
+            });
+            elements.resGroupsContainer.appendChild(groupEl);
+          });
+          renderResistanceExtras(model.pathogenKey);
+          updateResPreview();
+        }
+
+        function renderResistanceExtras(pathogenKey) {
+          const container = elements.resExtrasContainer;
+          container.innerHTML = "";
+          if (pathogenKey !== "enterobacterales") {
+            const text = document.createElement("p");
+            text.className = "muted-text";
+            text.textContent = "Keine zusätzlichen Angaben erforderlich.";
+            container.appendChild(text);
+            return;
+          }
+          const extras = resistanceState.model.extras || (resistanceState.model.extras = {});
+          const block = document.createElement("div");
+          block.className = "res-extra";
+          const merRow = document.createElement("div");
+          merRow.style.display = "flex";
+          merRow.style.alignItems = "center";
+          merRow.style.gap = "0.5rem";
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = Boolean(extras.meropenemRes);
+          checkbox.addEventListener("change", (event) => {
+            resistanceState.model.extras.meropenemRes = event.target.checked;
+            updateResPreview();
+          });
+          const cbLabel = document.createElement("label");
+          cbLabel.textContent = "Nachweis einer Meropenem-Resistenz";
+          cbLabel.style.margin = "0";
+          merRow.appendChild(checkbox);
+          merRow.appendChild(cbLabel);
+          block.appendChild(merRow);
+
+          const carbRow = document.createElement("div");
+          carbRow.style.marginTop = "0.8rem";
+          const carbLabel = document.createElement("label");
+          carbLabel.textContent = "Carbapenemase(-Gen)-Ergebnis";
+          const carbSelect = document.createElement("select");
+          RESULT_OPTIONS.forEach((opt) => {
+            const option = document.createElement("option");
+            option.value = opt.value;
+            option.textContent = opt.label;
+            carbSelect.appendChild(option);
+          });
+          carbSelect.value = extras.carbapenemaseResult || "";
+          carbSelect.addEventListener("change", (event) => {
+            resistanceState.model.extras.carbapenemaseResult = event.target.value;
+            updateResPreview();
+          });
+          carbRow.appendChild(carbLabel);
+          carbRow.appendChild(carbSelect);
+          block.appendChild(carbRow);
+
+          const geneRow = document.createElement("div");
+          geneRow.style.marginTop = "0.8rem";
+          const geneLabel = document.createElement("label");
+          geneLabel.textContent = "Gene oder Carbapenemasen";
+          const geneInputWrap = document.createElement("div");
+          geneInputWrap.style.display = "flex";
+          geneInputWrap.style.gap = "0.5rem";
+          geneInputWrap.style.marginTop = "0.25rem";
+          const geneInput = document.createElement("input");
+          geneInput.type = "text";
+          geneInput.placeholder = "z. B. blaKPC";
+          const addGeneBtn = document.createElement("button");
+          addGeneBtn.type = "button";
+          addGeneBtn.textContent = "Hinzufügen";
+          addGeneBtn.className = "ghost-btn";
+          addGeneBtn.style.padding = "0.3rem 0.8rem";
+          addGeneBtn.addEventListener("click", () => {
+            const value = geneInput.value.trim();
+            if (!value) return;
+            if (!Array.isArray(resistanceState.model.extras.genes)) {
+              resistanceState.model.extras.genes = [];
+            }
+            resistanceState.model.extras.genes.push(value);
+            geneInput.value = "";
+            renderResistanceExtras(pathogenKey);
+            updateResPreview();
+          });
+          geneInputWrap.appendChild(geneInput);
+          geneInputWrap.appendChild(addGeneBtn);
+          const badges = document.createElement("div");
+          badges.className = "badge-list";
+          (extras.genes || []).forEach((gene, idx) => {
+            const badge = document.createElement("span");
+            badge.className = "badge";
+            badge.textContent = gene;
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.textContent = "×";
+            removeBtn.addEventListener("click", () => {
+              resistanceState.model.extras.genes.splice(idx, 1);
+              renderResistanceExtras(pathogenKey);
+              updateResPreview();
+            });
+            badge.appendChild(removeBtn);
+            badges.appendChild(badge);
+          });
+          geneRow.appendChild(geneLabel);
+          geneRow.appendChild(geneInputWrap);
+          geneRow.appendChild(badges);
+          block.appendChild(geneRow);
+
+          container.appendChild(block);
+        }
+
+        function updateResPreview() {
+          if (!resistanceState.model) {
+            elements.resIdPreview.textContent = "noch nicht vergeben";
+            return;
+          }
+          const id = computeResId(currentPathogen, resistanceState.model);
+          elements.resIdPreview.textContent = id || "noch nicht vergeben";
+        }
+
+        function saveToStorage() {
+          const payload = {
+            pathogen: currentPathogen,
+            rows,
+          };
+          localStorage.setItem("lab-demo", JSON.stringify(payload));
+          showToast("In LocalStorage gespeichert");
+        }
+
+        function loadFromStorage() {
+          const stored = localStorage.getItem("lab-demo");
+          if (!stored) {
+            showToast("Keine gespeicherten Daten gefunden");
+            return;
+          }
+          try {
+            const parsed = JSON.parse(stored);
+            currentPathogen = parsed.pathogen || currentPathogen;
+            elements.pathogenSelect.value = currentPathogen;
+            rows = (parsed.rows || []).map((raw) => hydrateRow(raw));
+            if (!rows.length) {
+              rows.push(createEmptyRow());
+            }
+            renderTable();
+            showToast("Daten geladen");
+          } catch (error) {
+            console.error(error);
+            showToast("Laden fehlgeschlagen");
+          }
+        }
+
+        function hydrateRow(raw) {
+          const fresh = createEmptyRow();
+          const hydratedRes = hydrateResModel(raw.resModel);
+          return {
+            ...fresh,
+            date: raw.date || "",
+            lab: raw.lab || "",
+            method: PATHOGEN_CONFIG[currentPathogen].methods.includes(raw.method) ? raw.method : "",
+            material: PATHOGEN_CONFIG[currentPathogen].materials.includes(raw.material) ? raw.material : "",
+            result: RESULT_OPTIONS.some((opt) => opt.value === raw.result) ? raw.result : "",
+            seqId: raw.seqId || "",
+            seqHint: raw.seqHint || "",
+            resModel: hydratedRes,
+            resId: computeResId(currentPathogen, hydratedRes),
+            detail: raw.detail || "",
+          };
+        }
+
+        function hydrateResModel(rawModel) {
+          const model = createDefaultResModel(currentPathogen);
+          if (!rawModel) return model;
+          model.groups.forEach((group) => {
+            const sourceGroup = rawModel.groups?.find((g) => g.name === group.name);
+            if (!sourceGroup) return;
+            group.items.forEach((item) => {
+              const sourceItem = sourceGroup.items?.find((i) => i.label === item.label);
+              if (sourceItem && RESIST_STATUS_OPTIONS.some((opt) => opt.value === sourceItem.status)) {
+                item.status = sourceItem.status;
+              }
+            });
+          });
+          if (currentPathogen === "enterobacterales") {
+            model.extras.meropenemRes = Boolean(rawModel.extras?.meropenemRes);
+            model.extras.carbapenemaseResult = RESULT_OPTIONS.some(
+              (opt) => opt.value === rawModel.extras?.carbapenemaseResult
+            )
+              ? rawModel.extras.carbapenemaseResult
+              : "";
+            model.extras.genes = Array.isArray(rawModel.extras?.genes)
+              ? rawModel.extras.genes.slice(0, 10)
+              : [];
+          }
+          return model;
+        }
+
+        function exportJSON() {
+          const payload = JSON.stringify({ pathogen: currentPathogen, rows }, null, 2);
+          const blob = new Blob([payload], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `labtests_${currentPathogen}.json`;
+          link.click();
+          URL.revokeObjectURL(url);
+          showToast("JSON exportiert");
+        }
+
+        function showToast(message) {
+          if (!elements.toast) return;
+          elements.toast.textContent = message;
+          elements.toast.classList.add("show");
+          if (toastTimer) {
+            clearTimeout(toastTimer);
+          }
+          toastTimer = setTimeout(() => {
+            elements.toast.classList.remove("show");
+          }, 2200);
+        }
+
+        init();
+      })();
+    </script>
+  </body>
+</html>
