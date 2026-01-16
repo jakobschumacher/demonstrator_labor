@@ -375,38 +375,6 @@
         cursor: pointer;
       }
 
-      .secondary-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-      }
-
-      .secondary-actions button {
-        border: none;
-        background: #f1f5f9;
-        color: #0f172a;
-        border-radius: 999px;
-        padding: 0.45rem 0.9rem;
-        font-size: 0.85rem;
-      }
-
-      .toast {
-        position: fixed;
-        bottom: 1.5rem;
-        right: 1.5rem;
-        background: #0f172a;
-        color: #fff;
-        padding: 0.85rem 1.2rem;
-        border-radius: 999px;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s ease;
-        z-index: 60;
-      }
-
-      .toast.show {
-        opacity: 0.95;
-      }
 
       @media (max-width: 900px) {
         header {
@@ -453,11 +421,6 @@
         </div>
         <div class="actions-bar">
           <button id="addRowBtn" class="primary-btn">+ Labortest hinzufügen</button>
-          <div class="secondary-actions">
-            <button id="saveStorageBtn" type="button">In LocalStorage speichern</button>
-            <button id="loadStorageBtn" type="button">Gespeicherte Daten laden</button>
-            <button id="exportJsonBtn" type="button">Export JSON</button>
-          </div>
         </div>
         <div class="table-wrapper">
           <table>
@@ -467,6 +430,7 @@
                 <th>Labor</th>
                 <th>Methode</th>
                 <th>Material</th>
+                <th>Erregerauswahl</th>
                 <th>Ergebnis</th>
                 <th>Sequenzierungsergebnis</th>
                 <th>Resistenz</th>
@@ -534,8 +498,6 @@
       </div>
     </div>
 
-    <div class="toast" id="toast">Gespeichert</div>
-
     <script>
       (function () {
         const RESULT_OPTIONS = [
@@ -574,6 +536,34 @@
               "Urin",
               "Stuhl",
               "Anderes Material",
+            ],
+            organisms: [
+              {
+                label: "Enterobacterales",
+                children: [
+                  {
+                    label: "Escherichia coli",
+                    children: [
+                      { label: "ST131" },
+                      { label: "ST69" },
+                    ],
+                  },
+                  {
+                    label: "Klebsiella pneumoniae",
+                    children: [
+                      { label: "ST258" },
+                      { label: "ST307" },
+                    ],
+                  },
+                  {
+                    label: "Enterobacter cloacae-Komplex",
+                    children: [
+                      { label: "Cluster I" },
+                      { label: "Cluster II" },
+                    ],
+                  },
+                ],
+              },
             ],
             resist: {
               groups: [
@@ -619,6 +609,27 @@
               "Andere Labormethode",
             ],
             materials: ["Stuhl", "Abstrich", "Anderes Material"],
+            organisms: [
+              {
+                label: "Campylobacter",
+                children: [
+                  {
+                    label: "Campylobacter jejuni",
+                    children: [
+                      { label: "ST-21 Komplex" },
+                      { label: "ST-45 Komplex" },
+                    ],
+                  },
+                  {
+                    label: "Campylobacter coli",
+                    children: [
+                      { label: "ST-825 Komplex" },
+                      { label: "ST-828 Komplex" },
+                    ],
+                  },
+                ],
+              },
+            ],
             resist: {
               groups: [
                 {
@@ -646,6 +657,27 @@
               "Urin",
               "Gewebeprobe",
               "Anderes Material",
+            ],
+            organisms: [
+              {
+                label: "Mycobacterium tuberculosis-Komplex",
+                children: [
+                  {
+                    label: "Mycobacterium tuberculosis",
+                    children: [
+                      { label: "Linie 1" },
+                      { label: "Linie 2" },
+                    ],
+                  },
+                  {
+                    label: "Mycobacterium bovis",
+                    children: [
+                      { label: "BCG" },
+                      { label: "Wildtyp" },
+                    ],
+                  },
+                ],
+              },
             ],
             resist: {
               groups: [
@@ -681,6 +713,36 @@
           tuberkulose: "TB",
         };
 
+        const organismOptionCache = {};
+
+        function getOrganismOptions(pathogenKey) {
+          if (!organismOptionCache[pathogenKey]) {
+            const config = PATHOGEN_CONFIG[pathogenKey];
+            if (!config) return [];
+            organismOptionCache[pathogenKey] = flattenOrganisms(config.organisms || []);
+          }
+          return organismOptionCache[pathogenKey];
+        }
+
+        function flattenOrganisms(nodes, trail = [], depth = 0, acc = []) {
+          nodes.forEach((node) => {
+            const newTrail = [...trail, node.label];
+            acc.push({
+              value: newTrail.join(" > "),
+              label: node.label,
+              depth,
+            });
+            if (Array.isArray(node.children) && node.children.length) {
+              flattenOrganisms(node.children, newTrail, depth + 1, acc);
+            }
+          });
+          return acc;
+        }
+
+        function getOrganismValueSet(pathogenKey) {
+          return new Set(getOrganismOptions(pathogenKey).map((opt) => opt.value));
+        }
+
         const elements = {
           pathogenSelect: document.getElementById("pathogenSelect"),
           addRowBtn: document.getElementById("addRowBtn"),
@@ -698,17 +760,12 @@
           resApplyBtn: document.getElementById("resApplyBtn"),
           resResetBtn: document.getElementById("resResetBtn"),
           resIdPreview: document.getElementById("resIdPreview"),
-          saveStorageBtn: document.getElementById("saveStorageBtn"),
-          loadStorageBtn: document.getElementById("loadStorageBtn"),
-          exportJsonBtn: document.getElementById("exportJsonBtn"),
-          toast: document.getElementById("toast"),
         };
 
         const sequenceState = { rowIndex: null };
         const resistanceState = { rowIndex: null, model: null };
         let currentPathogen = elements.pathogenSelect.value;
         let rows = [];
-        let toastTimer = null;
 
         function init() {
           rows.push(createEmptyRow());
@@ -717,9 +774,6 @@
             rows.push(createEmptyRow());
             renderTable();
           });
-          elements.saveStorageBtn.addEventListener("click", saveToStorage);
-          elements.loadStorageBtn.addEventListener("click", loadFromStorage);
-          elements.exportJsonBtn.addEventListener("click", exportJSON);
           setupSequenceModal();
           setupResistanceModal();
           renderTable();
@@ -728,6 +782,7 @@
         function onPathogenChange() {
           currentPathogen = elements.pathogenSelect.value;
           const config = PATHOGEN_CONFIG[currentPathogen];
+          const allowedOrganisms = getOrganismValueSet(currentPathogen);
           rows = rows.map((row) => {
             const updated = { ...row };
             if (!config.methods.includes(updated.method)) {
@@ -735,6 +790,9 @@
             }
             if (!config.materials.includes(updated.material)) {
               updated.material = "";
+            }
+            if (!allowedOrganisms.has(updated.organism)) {
+              updated.organism = "";
             }
             updated.resModel = createDefaultResModel(currentPathogen);
             updated.resId = "";
@@ -749,6 +807,7 @@
             lab: "",
             method: "",
             material: "",
+            organism: "",
             result: "",
             seqId: "",
             seqHint: "",
@@ -830,6 +889,7 @@
             tr.appendChild(renderTextCell(row, index));
             tr.appendChild(renderMethodCell(row, index));
             tr.appendChild(renderMaterialCell(row, index));
+            tr.appendChild(renderOrganismCell(row, index));
             tr.appendChild(renderResultCell(row, index));
             tr.appendChild(renderSequenceCell(row, index));
             tr.appendChild(renderResistanceCell(row, index));
@@ -897,6 +957,30 @@
             : "";
           select.addEventListener("change", (event) => {
             rows[index].material = event.target.value;
+          });
+          td.appendChild(select);
+          return td;
+        }
+
+        function renderOrganismCell(row, index) {
+          const td = document.createElement("td");
+          const select = document.createElement("select");
+          const placeholder = document.createElement("option");
+          placeholder.value = "";
+          placeholder.textContent = "-";
+          select.appendChild(placeholder);
+          const options = getOrganismOptions(currentPathogen);
+          const allowedValues = new Set(options.map((opt) => opt.value));
+          options.forEach((opt) => {
+            const option = document.createElement("option");
+            const indent = "\u00A0\u00A0".repeat(opt.depth);
+            option.value = opt.value;
+            option.textContent = `${indent}${opt.label}`;
+            select.appendChild(option);
+          });
+          select.value = allowedValues.has(row.organism) ? row.organism : "";
+          select.addEventListener("change", (event) => {
+            rows[index].organism = event.target.value;
           });
           td.appendChild(select);
           return td;
@@ -1232,106 +1316,6 @@
           }
           const id = computeResId(currentPathogen, resistanceState.model);
           elements.resIdPreview.textContent = id || "noch nicht vergeben";
-        }
-
-        function saveToStorage() {
-          const payload = {
-            pathogen: currentPathogen,
-            rows,
-          };
-          localStorage.setItem("lab-demo", JSON.stringify(payload));
-          showToast("In LocalStorage gespeichert");
-        }
-
-        function loadFromStorage() {
-          const stored = localStorage.getItem("lab-demo");
-          if (!stored) {
-            showToast("Keine gespeicherten Daten gefunden");
-            return;
-          }
-          try {
-            const parsed = JSON.parse(stored);
-            currentPathogen = parsed.pathogen || currentPathogen;
-            elements.pathogenSelect.value = currentPathogen;
-            rows = (parsed.rows || []).map((raw) => hydrateRow(raw));
-            if (!rows.length) {
-              rows.push(createEmptyRow());
-            }
-            renderTable();
-            showToast("Daten geladen");
-          } catch (error) {
-            console.error(error);
-            showToast("Laden fehlgeschlagen");
-          }
-        }
-
-        function hydrateRow(raw) {
-          const fresh = createEmptyRow();
-          const hydratedRes = hydrateResModel(raw.resModel);
-          return {
-            ...fresh,
-            date: raw.date || "",
-            lab: raw.lab || "",
-            method: PATHOGEN_CONFIG[currentPathogen].methods.includes(raw.method) ? raw.method : "",
-            material: PATHOGEN_CONFIG[currentPathogen].materials.includes(raw.material) ? raw.material : "",
-            result: RESULT_OPTIONS.some((opt) => opt.value === raw.result) ? raw.result : "",
-            seqId: raw.seqId || "",
-            seqHint: raw.seqHint || "",
-            resModel: hydratedRes,
-            resId: computeResId(currentPathogen, hydratedRes),
-            detail: raw.detail || "",
-          };
-        }
-
-        function hydrateResModel(rawModel) {
-          const model = createDefaultResModel(currentPathogen);
-          if (!rawModel) return model;
-          model.groups.forEach((group) => {
-            const sourceGroup = rawModel.groups?.find((g) => g.name === group.name);
-            if (!sourceGroup) return;
-            group.items.forEach((item) => {
-              const sourceItem = sourceGroup.items?.find((i) => i.label === item.label);
-              if (sourceItem && RESIST_STATUS_OPTIONS.some((opt) => opt.value === sourceItem.status)) {
-                item.status = sourceItem.status;
-              }
-            });
-          });
-          if (currentPathogen === "enterobacterales") {
-            model.extras.meropenemRes = Boolean(rawModel.extras?.meropenemRes);
-            model.extras.carbapenemaseResult = RESULT_OPTIONS.some(
-              (opt) => opt.value === rawModel.extras?.carbapenemaseResult
-            )
-              ? rawModel.extras.carbapenemaseResult
-              : "";
-            model.extras.genes = Array.isArray(rawModel.extras?.genes)
-              ? rawModel.extras.genes.slice(0, 10)
-              : [];
-          }
-          return model;
-        }
-
-        function exportJSON() {
-          const payload = JSON.stringify({ pathogen: currentPathogen, rows }, null, 2);
-          const blob = new Blob([payload], { type: "application/json" });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `labtests_${currentPathogen}.json`;
-          link.click();
-          URL.revokeObjectURL(url);
-          showToast("JSON exportiert");
-        }
-
-        function showToast(message) {
-          if (!elements.toast) return;
-          elements.toast.textContent = message;
-          elements.toast.classList.add("show");
-          if (toastTimer) {
-            clearTimeout(toastTimer);
-          }
-          toastTimer = setTimeout(() => {
-            elements.toast.classList.remove("show");
-          }, 2200);
         }
 
         init();
