@@ -18,21 +18,25 @@ Die bisherige Software erfasst viele Eingaben vor allem als Checkbox, die man an
 - Erregerabhaengige Testkonfiguration
 - Sequenzierungsinformationen
 - Resistenzprofile inkl. abgeleiteter ID
+- Erregerbezogene Vorauswahl von Laborzeilen umgesetzt
 
 ### Klinische Informationen
 - Erweiterbare Symptomliste umgesetzt
 - Verbindliche Feldstruktur: Symptom, Datum Beginn, Datum Ende, Sicherheit
 - Sicherheitswerte als Auswahl: vermutet, von der betroffenen Person erfragt,
   von weiterer Person erfragt
+- Erregerbezogene Vorauswahl von Symptomzeilen umgesetzt
 
 ### Risikofaktoren
 - Erweiterbare Liste umgesetzt
 - Verbindliche Feldstruktur: Risikofaktor, Datum Beginn, Datum Ende, Sicherheit
+- Erregerbezogene Vorauswahl fuer Enterobacterales und Tuberkulose umgesetzt
 
 ### Expositionen
 - Erweiterbare Liste umgesetzt
 - Verbindliche Feldstruktur: Exposition, Art des Kontaktes, Datum Beginn, Datum Ende, Sicherheit, Nachweis in der Quelle
 - Expositionsoptionen pro Erreger zentral in `PATHOGEN_CONFIG`
+- Erregerbezogene Vorauswahl fuer Enterobacterales und Tuberkulose umgesetzt
 
 ### In Planung
 - Erweiterbare Liste fuer weitere klinische Kontextfelder (nicht symptomzeilenbasiert)
@@ -64,6 +68,7 @@ Die bisherige Software erfasst viele Eingaben vor allem als Checkbox, die man an
 - Bei Expositionen die verbindliche Feldstruktur beibehalten
   (Exposition, Art des Kontaktes, Datum Beginn, Datum Ende, Sicherheit, Nachweis in der Quelle)
 - Erregerwechsel muss ungueltige Auswahlwerte in allen Listen defensiv zuruecksetzen
+- Erregerbezogene Vorauswahlen zentral in `PATHOGEN_CONFIG` halten
 
 ## Dokumentationspflicht
 

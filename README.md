@@ -94,3 +94,11 @@ Auswahl fuer die Sicherheit der Informationsermittlung:
 - Expositionsoptionen wurden aus `survnet_variablen.csv` fuer Enterobacterales, Campylobacter und Tuberkulose in `PATHOGEN_CONFIG` hinterlegt
 - Exposition wurde erweitert um Lebensmittel-Optionen und Kontakt-zu-Menschen inkl. Kontaktarten
 - Nachweis in der Quelle wird als Auswahl gepflegt: `gesichert`, `vermutet`
+
+## Umgesetzte Erweiterung: Erregerbezogene Vorauswahl
+
+- Beim Erregerwechsel werden fuer Labor und klinische Informationen passende Beispielzeilen vorausgefuellt
+- Campylobacter startet u. a. mit Symptomen zu Bauchschmerzen und Durchfall sowie PCR-Labortest
+- Enterobacterales und Tuberkulose erhalten ebenfalls erregerpassende Vorauswahlen fuer Labor und Klinik
+- Fuer Enterobacterales und Tuberkulose werden zudem passende Risikofaktoren und Expositionen vorausgewaehlt
+- Campylobacter startet bei Risikofaktoren und Expositionen weiterhin mit leeren Zeilen

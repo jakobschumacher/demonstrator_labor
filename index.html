@@ -414,6 +414,32 @@
 
       <section class="table-card">
         <div class="table-header">
+          <h2>Klinische Informationen</h2>
+          <p class="muted-text">
+            Symptome als erweiterbare Liste mit zeitlichem Verlauf und Sicherheit der Informationsquelle.
+          </p>
+        </div>
+        <div class="actions-bar">
+          <button id="addClinicalRowBtn" class="primary-btn">+ Symptom hinzufügen</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Symptom</th>
+                <th>Datum Beginn</th>
+                <th>Datum Ende</th>
+                <th>Sicherheit</th>
+                <th>Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="clinicalRowsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="table-card" style="margin-top: 1rem">
+        <div class="table-header">
           <h2>Labortests</h2>
           <p class="muted-text">
             Jede Tabellenzeile repräsentiert einen Test. Alle Felder sind optional, leere Zeilen bleiben möglich.
@@ -439,32 +465,6 @@
               </tr>
             </thead>
             <tbody id="rowsBody"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="table-card" style="margin-top: 1rem">
-        <div class="table-header">
-          <h2>Klinische Informationen</h2>
-          <p class="muted-text">
-            Symptome als erweiterbare Liste mit zeitlichem Verlauf und Sicherheit der Informationsquelle.
-          </p>
-        </div>
-        <div class="actions-bar">
-          <button id="addClinicalRowBtn" class="primary-btn">+ Symptom hinzufügen</button>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Symptom</th>
-                <th>Datum Beginn</th>
-                <th>Datum Ende</th>
-                <th>Sicherheit</th>
-                <th>Aktionen</th>
-              </tr>
-            </thead>
-            <tbody id="clinicalRowsBody"></tbody>
           </table>
         </div>
       </section>
@@ -707,6 +707,27 @@
               "Lebensmittel: Meeresfruechte",
               "Kontakt zu Menschen",
             ],
+            defaultLabRows: [
+              {
+                method: "Nukleinsäure-Nachweis (z. B. PCR)",
+                material: "Blut",
+                organism: "Enterobacterales > Escherichia coli",
+              },
+              {
+                method: "Erregerisolierung (kulturell)",
+                material: "Abstrich (Screening)",
+                organism: "Enterobacterales > Klebsiella pneumoniae",
+              },
+            ],
+            defaultClinicalRows: [{ symptom: "Sepsiszeichen" }],
+            defaultRiskRows: [
+              { riskFactor: "Gesundheitswesen (beruflich)" },
+              { riskFactor: "Immunsuppression" },
+            ],
+            defaultExposureRows: [
+              { exposure: "Kontakt zu Menschen", contactType: "Gemeinsamer Haushalt" },
+              { exposure: "Zugehoerigkeit zum Ausbruch", sourceEvidence: "vermutet" },
+            ],
             resist: {
               groups: [
                 { name: "Carbapeneme", items: ["Ertapenem", "Imipenem", "Meropenem"] },
@@ -806,6 +827,22 @@
               "Lebensmittel: Meeresfruechte",
               "Kontakt zu Menschen",
             ],
+            defaultLabRows: [
+              {
+                method: "Nukleinsäure-Nachweis (z. B. PCR)",
+                material: "Stuhl",
+                organism: "Campylobacter > Campylobacter jejuni",
+              },
+              {
+                method: "Erregerisolierung (kulturell)",
+                material: "Stuhl",
+                organism: "Campylobacter > Campylobacter coli",
+              },
+            ],
+            defaultClinicalRows: [
+              { symptom: "Bauchschmerzen" },
+              { symptom: "Durchfall, nicht näher bezeichnet" },
+            ],
             resist: {
               groups: [
                 {
@@ -883,6 +920,27 @@
               "Lebensmittel: Rohmilchkaese",
               "Lebensmittel: Meeresfruechte",
               "Kontakt zu Menschen",
+            ],
+            defaultLabRows: [
+              {
+                method: "Nukleinsäure-Nachweis (z. B. PCR)",
+                material: "Sputum",
+                organism: "Mycobacterium tuberculosis-Komplex > Mycobacterium tuberculosis",
+              },
+              {
+                method: "Kultureller Nachweis",
+                material: "Bronchoalveoläre Lavage (BAL)",
+                organism: "Mycobacterium tuberculosis-Komplex > Mycobacterium tuberculosis",
+              },
+            ],
+            defaultClinicalRows: [{ symptom: "Husten" }, { symptom: "Fieber" }],
+            defaultRiskRows: [
+              { riskFactor: "Pflege/Betreuung in Einrichtung (beruflich)" },
+              { riskFactor: "Immunsuppression" },
+            ],
+            defaultExposureRows: [
+              { exposure: "Kontakt zu Menschen", contactType: "Gemeinsames Wohnen" },
+              { exposure: "In Justizvollzugsanstalt", sourceEvidence: "gesichert" },
             ],
             resist: {
               groups: [
@@ -982,10 +1040,7 @@
         let exposureRows = [];
 
         function init() {
-          rows.push(createEmptyRow());
-          clinicalRows.push(createEmptyClinicalRow());
-          riskRows.push(createEmptyRiskRow());
-          exposureRows.push(createEmptyExposureRow());
+          applyPathogenDefaults(currentPathogen);
           elements.pathogenSelect.addEventListener("change", onPathogenChange);
           elements.addRowBtn.addEventListener("click", () => {
             rows.push(createEmptyRow());
@@ -1013,26 +1068,39 @@
 
         function onPathogenChange() {
           currentPathogen = elements.pathogenSelect.value;
-          const config = PATHOGEN_CONFIG[currentPathogen];
-          const allowedOrganisms = getOrganismValueSet(currentPathogen);
-          const allowedSymptoms = new Set(config.clinicalSymptoms || []);
-          const allowedRiskFactors = new Set(config.riskFactors || []);
-          const allowedExposures = new Set(config.exposures || []);
+          applyPathogenDefaults(currentPathogen);
+          renderTable();
+          renderClinicalTable();
+          renderRiskTable();
+          renderExposureTable();
+        }
+
+        function applyPathogenDefaults(pathogenKey) {
+          const config = PATHOGEN_CONFIG[pathogenKey] || {};
+          const allowedOrganisms = getOrganismValueSet(pathogenKey);
+          rows = (config.defaultLabRows || []).map((preset) => createLabRowFromPreset(pathogenKey, preset));
+          if (!rows.length) {
+            rows = [createEmptyRow(pathogenKey)];
+          }
           rows = rows.map((row) => {
             const updated = { ...row };
-            if (!config.methods.includes(updated.method)) {
+            if (!config.methods?.includes(updated.method)) {
               updated.method = "";
             }
-            if (!config.materials.includes(updated.material)) {
+            if (!config.materials?.includes(updated.material)) {
               updated.material = "";
             }
             if (!allowedOrganisms.has(updated.organism)) {
               updated.organism = "";
             }
-            updated.resModel = createDefaultResModel(currentPathogen);
-            updated.resId = "";
             return updated;
           });
+
+          const allowedSymptoms = new Set(config.clinicalSymptoms || []);
+          clinicalRows = (config.defaultClinicalRows || []).map((preset) => createClinicalRowFromPreset(preset));
+          if (!clinicalRows.length) {
+            clinicalRows = [createEmptyClinicalRow()];
+          }
           clinicalRows = clinicalRows.map((entry) => {
             const updated = { ...entry };
             if (!allowedSymptoms.has(updated.symptom)) {
@@ -1040,6 +1108,12 @@
             }
             return updated;
           });
+
+          const allowedRiskFactors = new Set(config.riskFactors || []);
+          riskRows = (config.defaultRiskRows || []).map((preset) => createRiskRowFromPreset(preset));
+          if (!riskRows.length) {
+            riskRows = [createEmptyRiskRow()];
+          }
           riskRows = riskRows.map((entry) => {
             const updated = { ...entry };
             if (!allowedRiskFactors.has(updated.riskFactor)) {
@@ -1047,6 +1121,12 @@
             }
             return updated;
           });
+
+          const allowedExposures = new Set(config.exposures || []);
+          exposureRows = (config.defaultExposureRows || []).map((preset) => createExposureRowFromPreset(preset));
+          if (!exposureRows.length) {
+            exposureRows = [createEmptyExposureRow()];
+          }
           exposureRows = exposureRows.map((entry) => {
             const updated = { ...entry };
             if (!allowedExposures.has(updated.exposure)) {
@@ -1057,13 +1137,9 @@
             }
             return updated;
           });
-          renderTable();
-          renderClinicalTable();
-          renderRiskTable();
-          renderExposureTable();
         }
 
-        function createEmptyRow() {
+        function createEmptyRow(pathogenKey = currentPathogen) {
           return {
             date: "",
             lab: "",
@@ -1074,8 +1150,17 @@
             seqId: "",
             seqHint: "",
             resId: "",
-            resModel: createDefaultResModel(currentPathogen),
+            resModel: createDefaultResModel(pathogenKey),
             detail: "",
+          };
+        }
+
+        function createLabRowFromPreset(pathogenKey, preset) {
+          return {
+            ...createEmptyRow(pathogenKey),
+            ...preset,
+            resId: "",
+            resModel: createDefaultResModel(pathogenKey),
           };
         }
 
@@ -1088,12 +1173,26 @@
           };
         }
 
+        function createClinicalRowFromPreset(preset) {
+          return {
+            ...createEmptyClinicalRow(),
+            ...preset,
+          };
+        }
+
         function createEmptyRiskRow() {
           return {
             riskFactor: "",
             startDate: "",
             endDate: "",
             certainty: "",
+          };
+        }
+
+        function createRiskRowFromPreset(preset) {
+          return {
+            ...createEmptyRiskRow(),
+            ...preset,
           };
         }
 
@@ -1105,6 +1204,13 @@
             endDate: "",
             certainty: "",
             sourceEvidence: "",
+          };
+        }
+
+        function createExposureRowFromPreset(preset) {
+          return {
+            ...createEmptyExposureRow(),
+            ...preset,
           };
         }
 
