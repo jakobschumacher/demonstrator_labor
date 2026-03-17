@@ -397,9 +397,9 @@
     <div class="app-shell">
       <header>
         <div class="header-title">
-          <h1>Einheitliche Laborerfassung</h1>
+          <h1>Einheitliche Fallinformationen</h1>
           <p class="muted-text">
-            Demonstrator für Labortests mit sequenzierten Nachweisen und Resistenzprofilen.
+            Demonstrator fuer Laborangaben, klinische Informationen, Risikofaktoren und Expositionen.
           </p>
         </div>
         <div class="pathogen-picker">
@@ -439,6 +439,86 @@
               </tr>
             </thead>
             <tbody id="rowsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="table-card" style="margin-top: 1rem">
+        <div class="table-header">
+          <h2>Klinische Informationen</h2>
+          <p class="muted-text">
+            Symptome als erweiterbare Liste mit zeitlichem Verlauf und Sicherheit der Informationsquelle.
+          </p>
+        </div>
+        <div class="actions-bar">
+          <button id="addClinicalRowBtn" class="primary-btn">+ Symptom hinzufügen</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Symptom</th>
+                <th>Datum Beginn</th>
+                <th>Datum Ende</th>
+                <th>Sicherheit</th>
+                <th>Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="clinicalRowsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="table-card" style="margin-top: 1rem">
+        <div class="table-header">
+          <h2>Risikofaktoren</h2>
+          <p class="muted-text">
+            Erweiterbare Liste fuer berufliche und klinische Risikofaktoren mit Zeitbezug.
+          </p>
+        </div>
+        <div class="actions-bar">
+          <button id="addRiskRowBtn" class="primary-btn">+ Risikofaktor hinzufügen</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Risikofaktor</th>
+                <th>Datum Beginn</th>
+                <th>Datum Ende</th>
+                <th>Sicherheit</th>
+                <th>Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="riskRowsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="table-card" style="margin-top: 1rem">
+        <div class="table-header">
+          <h2>Expositionen</h2>
+          <p class="muted-text">
+            Erweiterbare Liste mit erregerabhaengigen Expositionsoptionen aus den SurvNet-Variablen.
+          </p>
+        </div>
+        <div class="actions-bar">
+          <button id="addExposureRowBtn" class="primary-btn">+ Exposition hinzufügen</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Exposition</th>
+                <th>Art des Kontaktes</th>
+                <th>Datum Beginn</th>
+                <th>Datum Ende</th>
+                <th>Sicherheit</th>
+                <th>Nachweis in der Quelle</th>
+                <th>Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="exposureRowsBody"></tbody>
           </table>
         </div>
       </section>
@@ -518,6 +598,34 @@
           { value: "ausstehend", label: "ausstehend" },
         ];
 
+        const CLINICAL_CERTAINTY_OPTIONS = [
+          { value: "", label: "-" },
+          { value: "vermutet", label: "vermutet" },
+          {
+            value: "von der betroffenen Person erfragt",
+            label: "von der betroffenen Person erfragt",
+          },
+          {
+            value: "von weiterer Person erfragt",
+            label: "von weiterer Person erfragt",
+          },
+        ];
+
+        const CONTACT_TYPE_OPTIONS = [
+          "Gemeinsames Wohnen",
+          "Gemeinsamer Haushalt",
+          "Sex (geschuetzt)",
+          "Sex (ungeschuetzt)",
+          "Pflege/Betreuung",
+          "Sonstiger enger Kontakt",
+        ];
+
+        const SOURCE_EVIDENCE_OPTIONS = [
+          { value: "", label: "-" },
+          { value: "gesichert", label: "gesichert" },
+          { value: "vermutet", label: "vermutet" },
+        ];
+
         const PATHOGEN_CONFIG = {
           enterobacterales: {
             label: "Enterobacterales",
@@ -564,6 +672,40 @@
                   },
                 ],
               },
+            ],
+            clinicalSymptoms: [
+              "Fieber",
+              "Sepsiszeichen",
+              "Wundinfektion",
+              "Harnwegsbeschwerden",
+              "Atemwegsbeschwerden",
+            ],
+            riskFactors: [
+              "Gesundheitswesen (beruflich)",
+              "Laborpersonal (beruflich)",
+              "Pflege/Betreuung in Einrichtung (beruflich)",
+              "Tierkontakt (beruflich)",
+              "Asthma",
+              "Chronische Lungenerkrankung",
+              "Chronische Herzerkrankung",
+              "Diabetes",
+              "Adipositas (Uebergewicht)",
+              "Immunsuppression",
+              "Schwangerschaft",
+            ],
+            exposures: [
+              "Expositionszeit",
+              "Kontaktpersonenvorgaenge",
+              "Mutmasslich angesteckt bei",
+              "Zugehoerigkeit zu Clustern",
+              "Zugehoerigkeit zum Ausbruch",
+              "Zugehoerigkeit zur Bundeswehr",
+              "Lebensmittel: Gefluegel",
+              "Lebensmittel: Eier",
+              "Lebensmittel: Rohmilch",
+              "Lebensmittel: Rohmilchkaese",
+              "Lebensmittel: Meeresfruechte",
+              "Kontakt zu Menschen",
             ],
             resist: {
               groups: [
@@ -630,6 +772,40 @@
                 ],
               },
             ],
+            clinicalSymptoms: [
+              "Bauchschmerzen",
+              "Durchfall, blutig",
+              "Durchfall, nicht näher bezeichnet",
+              "Erbrechen",
+              "Fieber",
+            ],
+            riskFactors: [
+              "Gesundheitswesen (beruflich)",
+              "Laborpersonal (beruflich)",
+              "Pflege/Betreuung in Einrichtung (beruflich)",
+              "Tierkontakt (beruflich)",
+              "Asthma",
+              "Chronische Lungenerkrankung",
+              "Chronische Herzerkrankung",
+              "Diabetes",
+              "Adipositas (Uebergewicht)",
+              "Immunsuppression",
+              "Schwangerschaft",
+            ],
+            exposures: [
+              "Expositionszeit",
+              "Kontaktpersonenvorgaenge",
+              "Mutmasslich angesteckt bei",
+              "Zugehoerigkeit zu Clustern",
+              "Zugehoerigkeit zum Ausbruch",
+              "Zugehoerigkeit zur Bundeswehr",
+              "Lebensmittel: Gefluegel",
+              "Lebensmittel: Eier",
+              "Lebensmittel: Rohmilch",
+              "Lebensmittel: Rohmilchkaese",
+              "Lebensmittel: Meeresfruechte",
+              "Kontakt zu Menschen",
+            ],
             resist: {
               groups: [
                 {
@@ -678,6 +854,35 @@
                   },
                 ],
               },
+            ],
+            clinicalSymptoms: ["Husten", "Nachtschweiß", "Gewichtsverlust", "Fieber", "Hämoptysen"],
+            riskFactors: [
+              "Gesundheitswesen (beruflich)",
+              "Laborpersonal (beruflich)",
+              "Pflege/Betreuung in Einrichtung (beruflich)",
+              "Tierkontakt (beruflich)",
+              "Asthma",
+              "Chronische Lungenerkrankung",
+              "Chronische Herzerkrankung",
+              "Diabetes",
+              "Adipositas (Uebergewicht)",
+              "Immunsuppression",
+              "Schwangerschaft",
+            ],
+            exposures: [
+              "Expositionszeit",
+              "Kontaktpersonenvorgaenge",
+              "Mutmasslich angesteckt bei",
+              "Zugehoerigkeit zu Clustern",
+              "Zugehoerigkeit zum Ausbruch",
+              "Zugehoerigkeit zur Bundeswehr",
+              "In Justizvollzugsanstalt",
+              "Lebensmittel: Gefluegel",
+              "Lebensmittel: Eier",
+              "Lebensmittel: Rohmilch",
+              "Lebensmittel: Rohmilchkaese",
+              "Lebensmittel: Meeresfruechte",
+              "Kontakt zu Menschen",
             ],
             resist: {
               groups: [
@@ -746,7 +951,13 @@
         const elements = {
           pathogenSelect: document.getElementById("pathogenSelect"),
           addRowBtn: document.getElementById("addRowBtn"),
+          addClinicalRowBtn: document.getElementById("addClinicalRowBtn"),
+          addRiskRowBtn: document.getElementById("addRiskRowBtn"),
+          addExposureRowBtn: document.getElementById("addExposureRowBtn"),
           rowsBody: document.getElementById("rowsBody"),
+          clinicalRowsBody: document.getElementById("clinicalRowsBody"),
+          riskRowsBody: document.getElementById("riskRowsBody"),
+          exposureRowsBody: document.getElementById("exposureRowsBody"),
           seqModal: document.getElementById("sequenceModal"),
           seqIdInput: document.getElementById("sequenceIdInput"),
           seqHintInput: document.getElementById("sequenceHintInput"),
@@ -766,23 +977,47 @@
         const resistanceState = { rowIndex: null, model: null };
         let currentPathogen = elements.pathogenSelect.value;
         let rows = [];
+        let clinicalRows = [];
+        let riskRows = [];
+        let exposureRows = [];
 
         function init() {
           rows.push(createEmptyRow());
+          clinicalRows.push(createEmptyClinicalRow());
+          riskRows.push(createEmptyRiskRow());
+          exposureRows.push(createEmptyExposureRow());
           elements.pathogenSelect.addEventListener("change", onPathogenChange);
           elements.addRowBtn.addEventListener("click", () => {
             rows.push(createEmptyRow());
             renderTable();
           });
+          elements.addClinicalRowBtn.addEventListener("click", () => {
+            clinicalRows.push(createEmptyClinicalRow());
+            renderClinicalTable();
+          });
+          elements.addRiskRowBtn.addEventListener("click", () => {
+            riskRows.push(createEmptyRiskRow());
+            renderRiskTable();
+          });
+          elements.addExposureRowBtn.addEventListener("click", () => {
+            exposureRows.push(createEmptyExposureRow());
+            renderExposureTable();
+          });
           setupSequenceModal();
           setupResistanceModal();
           renderTable();
+          renderClinicalTable();
+          renderRiskTable();
+          renderExposureTable();
         }
 
         function onPathogenChange() {
           currentPathogen = elements.pathogenSelect.value;
           const config = PATHOGEN_CONFIG[currentPathogen];
           const allowedOrganisms = getOrganismValueSet(currentPathogen);
+          const allowedSymptoms = new Set(config.clinicalSymptoms || []);
+          const allowedRiskFactors = new Set(config.riskFactors || []);
+          const allowedExposures = new Set(config.exposures || []);
           rows = rows.map((row) => {
             const updated = { ...row };
             if (!config.methods.includes(updated.method)) {
@@ -798,7 +1033,34 @@
             updated.resId = "";
             return updated;
           });
+          clinicalRows = clinicalRows.map((entry) => {
+            const updated = { ...entry };
+            if (!allowedSymptoms.has(updated.symptom)) {
+              updated.symptom = "";
+            }
+            return updated;
+          });
+          riskRows = riskRows.map((entry) => {
+            const updated = { ...entry };
+            if (!allowedRiskFactors.has(updated.riskFactor)) {
+              updated.riskFactor = "";
+            }
+            return updated;
+          });
+          exposureRows = exposureRows.map((entry) => {
+            const updated = { ...entry };
+            if (!allowedExposures.has(updated.exposure)) {
+              updated.exposure = "";
+            }
+            if (updated.exposure !== "Kontakt zu Menschen") {
+              updated.contactType = "";
+            }
+            return updated;
+          });
           renderTable();
+          renderClinicalTable();
+          renderRiskTable();
+          renderExposureTable();
         }
 
         function createEmptyRow() {
@@ -814,6 +1076,35 @@
             resId: "",
             resModel: createDefaultResModel(currentPathogen),
             detail: "",
+          };
+        }
+
+        function createEmptyClinicalRow() {
+          return {
+            symptom: "",
+            startDate: "",
+            endDate: "",
+            certainty: "",
+          };
+        }
+
+        function createEmptyRiskRow() {
+          return {
+            riskFactor: "",
+            startDate: "",
+            endDate: "",
+            certainty: "",
+          };
+        }
+
+        function createEmptyExposureRow() {
+          return {
+            exposure: "",
+            contactType: "",
+            startDate: "",
+            endDate: "",
+            certainty: "",
+            sourceEvidence: "",
           };
         }
 
@@ -900,13 +1191,394 @@
           if (!rows.length) {
             const tr = document.createElement("tr");
             const td = document.createElement("td");
-            td.colSpan = 9;
+            td.colSpan = 10;
             td.textContent = "Noch keine Labortests erfasst.";
             td.style.textAlign = "center";
             td.style.color = "#94a3b8";
             tr.appendChild(td);
             tbody.appendChild(tr);
           }
+        }
+
+        function renderClinicalTable() {
+          const tbody = elements.clinicalRowsBody;
+          tbody.innerHTML = "";
+          clinicalRows.forEach((entry, index) => {
+            const tr = document.createElement("tr");
+            tr.appendChild(renderClinicalSymptomCell(entry, index));
+            tr.appendChild(renderClinicalStartCell(entry, index));
+            tr.appendChild(renderClinicalEndCell(entry, index));
+            tr.appendChild(renderClinicalCertaintyCell(entry, index));
+            tr.appendChild(renderClinicalActionCell(index));
+            tbody.appendChild(tr);
+          });
+          if (!clinicalRows.length) {
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.colSpan = 5;
+            td.textContent = "Noch keine klinischen Informationen erfasst.";
+            td.style.textAlign = "center";
+            td.style.color = "#94a3b8";
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+          }
+        }
+
+        function renderClinicalSymptomCell(entry, index) {
+          const td = document.createElement("td");
+          const select = document.createElement("select");
+          buildOptions(select, PATHOGEN_CONFIG[currentPathogen].clinicalSymptoms || []);
+          select.value = entry.symptom;
+          select.addEventListener("change", (event) => {
+            clinicalRows[index].symptom = event.target.value;
+          });
+          td.appendChild(select);
+          return td;
+        }
+
+        function renderClinicalStartCell(entry, index) {
+          const td = document.createElement("td");
+          const input = document.createElement("input");
+          input.type = "date";
+          input.value = entry.startDate;
+          if (entry.endDate) {
+            input.max = entry.endDate;
+          }
+          input.addEventListener("change", (event) => {
+            clinicalRows[index].startDate = event.target.value;
+            if (
+              clinicalRows[index].startDate &&
+              clinicalRows[index].endDate &&
+              clinicalRows[index].endDate < clinicalRows[index].startDate
+            ) {
+              clinicalRows[index].endDate = "";
+              renderClinicalTable();
+            }
+          });
+          td.appendChild(input);
+          return td;
+        }
+
+        function renderClinicalEndCell(entry, index) {
+          const td = document.createElement("td");
+          const input = document.createElement("input");
+          input.type = "date";
+          input.value = entry.endDate;
+          if (entry.startDate) {
+            input.min = entry.startDate;
+          }
+          input.addEventListener("change", (event) => {
+            const value = event.target.value;
+            if (clinicalRows[index].startDate && value && value < clinicalRows[index].startDate) {
+              clinicalRows[index].endDate = "";
+              event.target.value = "";
+              return;
+            }
+            clinicalRows[index].endDate = value;
+          });
+          td.appendChild(input);
+          return td;
+        }
+
+        function renderClinicalCertaintyCell(entry, index) {
+          const td = document.createElement("td");
+          const select = document.createElement("select");
+          CLINICAL_CERTAINTY_OPTIONS.forEach((opt) => {
+            const option = document.createElement("option");
+            option.value = opt.value;
+            option.textContent = opt.label;
+            select.appendChild(option);
+          });
+          select.value = entry.certainty;
+          select.addEventListener("change", (event) => {
+            clinicalRows[index].certainty = event.target.value;
+          });
+          td.appendChild(select);
+          return td;
+        }
+
+        function renderClinicalActionCell(index) {
+          const td = document.createElement("td");
+          const wrapper = document.createElement("div");
+          wrapper.className = "row-actions";
+          const duplicateBtn = document.createElement("button");
+          duplicateBtn.type = "button";
+          duplicateBtn.textContent = "Duplizieren";
+          duplicateBtn.addEventListener("click", () => duplicateClinicalRow(index));
+          const deleteBtn = document.createElement("button");
+          deleteBtn.type = "button";
+          deleteBtn.textContent = "Löschen";
+          deleteBtn.addEventListener("click", () => deleteClinicalRow(index));
+          wrapper.appendChild(duplicateBtn);
+          wrapper.appendChild(deleteBtn);
+          td.appendChild(wrapper);
+          return td;
+        }
+
+        function renderRiskTable() {
+          const tbody = elements.riskRowsBody;
+          tbody.innerHTML = "";
+          riskRows.forEach((entry, index) => {
+            const tr = document.createElement("tr");
+            tr.appendChild(renderRiskFactorCell(entry, index));
+            tr.appendChild(renderRiskStartCell(entry, index));
+            tr.appendChild(renderRiskEndCell(entry, index));
+            tr.appendChild(renderRiskCertaintyCell(entry, index));
+            tr.appendChild(renderRiskActionCell(index));
+            tbody.appendChild(tr);
+          });
+          if (!riskRows.length) {
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.colSpan = 5;
+            td.textContent = "Noch keine Risikofaktoren erfasst.";
+            td.style.textAlign = "center";
+            td.style.color = "#94a3b8";
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+          }
+        }
+
+        function renderRiskFactorCell(entry, index) {
+          const td = document.createElement("td");
+          const select = document.createElement("select");
+          buildOptions(select, PATHOGEN_CONFIG[currentPathogen].riskFactors || []);
+          select.value = entry.riskFactor;
+          select.addEventListener("change", (event) => {
+            riskRows[index].riskFactor = event.target.value;
+          });
+          td.appendChild(select);
+          return td;
+        }
+
+        function renderRiskStartCell(entry, index) {
+          const td = document.createElement("td");
+          const input = document.createElement("input");
+          input.type = "date";
+          input.value = entry.startDate;
+          if (entry.endDate) {
+            input.max = entry.endDate;
+          }
+          input.addEventListener("change", (event) => {
+            riskRows[index].startDate = event.target.value;
+            if (riskRows[index].startDate && riskRows[index].endDate && riskRows[index].endDate < riskRows[index].startDate) {
+              riskRows[index].endDate = "";
+              renderRiskTable();
+            }
+          });
+          td.appendChild(input);
+          return td;
+        }
+
+        function renderRiskEndCell(entry, index) {
+          const td = document.createElement("td");
+          const input = document.createElement("input");
+          input.type = "date";
+          input.value = entry.endDate;
+          if (entry.startDate) {
+            input.min = entry.startDate;
+          }
+          input.addEventListener("change", (event) => {
+            const value = event.target.value;
+            if (riskRows[index].startDate && value && value < riskRows[index].startDate) {
+              riskRows[index].endDate = "";
+              event.target.value = "";
+              return;
+            }
+            riskRows[index].endDate = value;
+          });
+          td.appendChild(input);
+          return td;
+        }
+
+        function renderRiskCertaintyCell(entry, index) {
+          const td = document.createElement("td");
+          const select = document.createElement("select");
+          CLINICAL_CERTAINTY_OPTIONS.forEach((opt) => {
+            const option = document.createElement("option");
+            option.value = opt.value;
+            option.textContent = opt.label;
+            select.appendChild(option);
+          });
+          select.value = entry.certainty;
+          select.addEventListener("change", (event) => {
+            riskRows[index].certainty = event.target.value;
+          });
+          td.appendChild(select);
+          return td;
+        }
+
+        function renderRiskActionCell(index) {
+          const td = document.createElement("td");
+          const wrapper = document.createElement("div");
+          wrapper.className = "row-actions";
+          const duplicateBtn = document.createElement("button");
+          duplicateBtn.type = "button";
+          duplicateBtn.textContent = "Duplizieren";
+          duplicateBtn.addEventListener("click", () => duplicateRiskRow(index));
+          const deleteBtn = document.createElement("button");
+          deleteBtn.type = "button";
+          deleteBtn.textContent = "Löschen";
+          deleteBtn.addEventListener("click", () => deleteRiskRow(index));
+          wrapper.appendChild(duplicateBtn);
+          wrapper.appendChild(deleteBtn);
+          td.appendChild(wrapper);
+          return td;
+        }
+
+        function renderExposureTable() {
+          const tbody = elements.exposureRowsBody;
+          tbody.innerHTML = "";
+          exposureRows.forEach((entry, index) => {
+            const tr = document.createElement("tr");
+            tr.appendChild(renderExposureCell(entry, index));
+            tr.appendChild(renderExposureContactTypeCell(entry, index));
+            tr.appendChild(renderExposureStartCell(entry, index));
+            tr.appendChild(renderExposureEndCell(entry, index));
+            tr.appendChild(renderExposureCertaintyCell(entry, index));
+            tr.appendChild(renderExposureSourceEvidenceCell(entry, index));
+            tr.appendChild(renderExposureActionCell(index));
+            tbody.appendChild(tr);
+          });
+          if (!exposureRows.length) {
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.colSpan = 7;
+            td.textContent = "Noch keine Expositionen erfasst.";
+            td.style.textAlign = "center";
+            td.style.color = "#94a3b8";
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+          }
+        }
+
+        function renderExposureCell(entry, index) {
+          const td = document.createElement("td");
+          const select = document.createElement("select");
+          buildOptions(select, PATHOGEN_CONFIG[currentPathogen].exposures || []);
+          select.value = entry.exposure;
+          select.addEventListener("change", (event) => {
+            exposureRows[index].exposure = event.target.value;
+            if (event.target.value !== "Kontakt zu Menschen") {
+              exposureRows[index].contactType = "";
+            }
+            renderExposureTable();
+          });
+          td.appendChild(select);
+          return td;
+        }
+
+        function renderExposureContactTypeCell(entry, index) {
+          const td = document.createElement("td");
+          const select = document.createElement("select");
+          buildOptions(select, CONTACT_TYPE_OPTIONS);
+          select.value = entry.contactType;
+          const enabled = entry.exposure === "Kontakt zu Menschen";
+          select.disabled = !enabled;
+          if (!enabled) {
+            select.value = "";
+          }
+          select.addEventListener("change", (event) => {
+            exposureRows[index].contactType = event.target.value;
+          });
+          td.appendChild(select);
+          return td;
+        }
+
+        function renderExposureStartCell(entry, index) {
+          const td = document.createElement("td");
+          const input = document.createElement("input");
+          input.type = "date";
+          input.value = entry.startDate;
+          if (entry.endDate) {
+            input.max = entry.endDate;
+          }
+          input.addEventListener("change", (event) => {
+            exposureRows[index].startDate = event.target.value;
+            if (
+              exposureRows[index].startDate &&
+              exposureRows[index].endDate &&
+              exposureRows[index].endDate < exposureRows[index].startDate
+            ) {
+              exposureRows[index].endDate = "";
+              renderExposureTable();
+            }
+          });
+          td.appendChild(input);
+          return td;
+        }
+
+        function renderExposureEndCell(entry, index) {
+          const td = document.createElement("td");
+          const input = document.createElement("input");
+          input.type = "date";
+          input.value = entry.endDate;
+          if (entry.startDate) {
+            input.min = entry.startDate;
+          }
+          input.addEventListener("change", (event) => {
+            const value = event.target.value;
+            if (exposureRows[index].startDate && value && value < exposureRows[index].startDate) {
+              exposureRows[index].endDate = "";
+              event.target.value = "";
+              return;
+            }
+            exposureRows[index].endDate = value;
+          });
+          td.appendChild(input);
+          return td;
+        }
+
+        function renderExposureCertaintyCell(entry, index) {
+          const td = document.createElement("td");
+          const select = document.createElement("select");
+          CLINICAL_CERTAINTY_OPTIONS.forEach((opt) => {
+            const option = document.createElement("option");
+            option.value = opt.value;
+            option.textContent = opt.label;
+            select.appendChild(option);
+          });
+          select.value = entry.certainty;
+          select.addEventListener("change", (event) => {
+            exposureRows[index].certainty = event.target.value;
+          });
+          td.appendChild(select);
+          return td;
+        }
+
+        function renderExposureSourceEvidenceCell(entry, index) {
+          const td = document.createElement("td");
+          const select = document.createElement("select");
+          SOURCE_EVIDENCE_OPTIONS.forEach((opt) => {
+            const option = document.createElement("option");
+            option.value = opt.value;
+            option.textContent = opt.label;
+            select.appendChild(option);
+          });
+          select.value = entry.sourceEvidence;
+          select.addEventListener("change", (event) => {
+            exposureRows[index].sourceEvidence = event.target.value;
+          });
+          td.appendChild(select);
+          return td;
+        }
+
+        function renderExposureActionCell(index) {
+          const td = document.createElement("td");
+          const wrapper = document.createElement("div");
+          wrapper.className = "row-actions";
+          const duplicateBtn = document.createElement("button");
+          duplicateBtn.type = "button";
+          duplicateBtn.textContent = "Duplizieren";
+          duplicateBtn.addEventListener("click", () => duplicateExposureRow(index));
+          const deleteBtn = document.createElement("button");
+          deleteBtn.type = "button";
+          deleteBtn.textContent = "Löschen";
+          deleteBtn.addEventListener("click", () => deleteExposureRow(index));
+          wrapper.appendChild(duplicateBtn);
+          wrapper.appendChild(deleteBtn);
+          td.appendChild(wrapper);
+          return td;
         }
 
         function renderDateCell(row, index) {
@@ -1084,6 +1756,39 @@
         function deleteRow(index) {
           rows.splice(index, 1);
           renderTable();
+        }
+
+        function duplicateClinicalRow(index) {
+          const clone = { ...clinicalRows[index] };
+          clinicalRows.splice(index + 1, 0, clone);
+          renderClinicalTable();
+        }
+
+        function deleteClinicalRow(index) {
+          clinicalRows.splice(index, 1);
+          renderClinicalTable();
+        }
+
+        function duplicateRiskRow(index) {
+          const clone = { ...riskRows[index] };
+          riskRows.splice(index + 1, 0, clone);
+          renderRiskTable();
+        }
+
+        function deleteRiskRow(index) {
+          riskRows.splice(index, 1);
+          renderRiskTable();
+        }
+
+        function duplicateExposureRow(index) {
+          const clone = { ...exposureRows[index] };
+          exposureRows.splice(index + 1, 0, clone);
+          renderExposureTable();
+        }
+
+        function deleteExposureRow(index) {
+          exposureRows.splice(index, 1);
+          renderExposureTable();
         }
 
         function setupSequenceModal() {
